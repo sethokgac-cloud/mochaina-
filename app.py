@@ -174,20 +174,18 @@ def live_games():
     user=User.query.get(session['uid'])
     return STYLE+f"""<div class=card><h2>🔴 LIVE GAMES 💕</h2><div class='music-tag'>🎹 Romantic music + low sounds inside</div><p style=color:#16a34a;font-weight:900>Balance: R{user.balance:.2f}</p><div class='game-card' onclick="location.href='/coin'" style=border-left:6px solid #facc15><b>🪙 COIN FLIP</b><span style=float:right>▶️</span></div><div class='game-card' onclick="location.href='/wheel'" style=border-left:6px solid #9333ea><b>🎡 WHEEL COLOR - NEW COOLER!</b><span style=float:right>▶️</span></div><div class='game-card' onclick="location.href='/slots'" style=border-left:6px solid #2563eb><b>🎰 SLOTS ONE BY ONE</b><span style=float:right>▶️</span></div><div class='game-card' onclick="location.href='/dice'" style=border-left:6px solid #16a34a><b>🎲 DICE THROW</b><span style=float:right>▶️</span></div><button class='btn' style=background:#e2e8f0;color:#475569;margin-top:16px onclick="location.href='/menu'">BACK TO MENU</button></div>"""
 
-# --- COOLER WHEEL - NO ZERO ---
 @app.route('/wheel')
 def wheel():
     if 'uid' not in session: return redirect('/login')
     user=User.query.get(session['uid'])
     colors = ["#dc2626","#eab308","#16a34a","#2563eb","#ea580c","#db2777","#7c3aed","#0891b2"]*2
-    names = ["RED","YEL","GREEN","BLUE","ORANGE","PINK","PURPLE","CYAN"]*2
     svg=""
     for i in range(16):
         a1=math.radians(i*22.5-90); a2=math.radians((i+1)*22.5-90)
         x1=100+95*math.cos(a1); y1=100+95*math.sin(a1)
         x2=100+95*math.cos(a2); y2=100+95*math.sin(a2)
         svg+=f'<path d="M100,100 L{x1:.1f},{y1:.1f} A95,95 0 0,1 {x2:.1f},{y2:.1f} Z" fill="{colors[i]}" stroke="white" stroke-width="3"/>'
-    return STYLE+f"""<div class=card><h2>🎡 COOLER WHEEL 💎</h2><div class='music-tag'>✨ Premium wheel - No zero! All colors win</div><p id='bal' style=color:#16a34a;font-weight:900>Balance: R{user.balance:.2f}</p><div style=position:relative><div style=position:absolute;top:-8px;left:50%;transform:translateX(-50%);font-size:42px;z-index:10;filter:drop-shadow(0 0 8px gold)>👇</div><div id='wheel' style='width:300px;height:300px;margin:10px auto;border-radius:50%;border:10px solid #facc15;overflow:hidden;transform:rotate(0deg);background:white;box-shadow:0 0 30px #facc15aa, 0 0 60px #f97316aa'><svg viewBox="0 0 200 200" style=width:100%;height:100%>{svg}<circle cx="100" cy="100" r="20" fill="#0f172a" stroke="#facc15" stroke-width="4"/><circle cx="100" cy="100" r="8" fill="#facc15"/></svg></div></div><div style=text-align:left;font-weight:900;font-size:13px;margin:12px 0 6px 0>PICK COLOR (All win!):</div><div style=display:grid;grid-template-columns:repeat(4,1fr);gap:8px><button class='color-btn' style=background:#dc2626;color:white onclick="pickColor('red','RED',this)">🔴 RED x2</button><button class='color-btn' style=background:#eab308;color:black onclick="pickColor('yellow','YELLOW',this)">🟡 YEL x3</button><button class='color-btn' style=background:#16a34a;color:white onclick="pickColor('green','GREEN',this)">🟢 GREEN x2.5</button><button class='color-btn' style=background:#2563eb;color:white onclick="pickColor('blue','BLUE',this)">🔵 BLUE x2.5</button><button class='color-btn' style=background:#ea580c;color:white onclick="pickColor('orange','ORANGE',this)">🟠 ORANGE x4</button><button class='color-btn' style=background:#db2777;color:white onclick="pickColor('pink','PINK',this)">🩷 PINK x4</button><button class='color-btn' style=background:#7c3aed;color:white onclick="pickColor('purple','PURPLE',this)">🟣 PURPLE x5</button><button class='color-btn' style=background:#0891b2;color:white onclick="pickColor('cyan','CYAN',this)">🔷 CYAN x5</button></div><div id='picked' style=font-weight:900;margin:12px 0;min-height:20px;color:#9333ea>Pick color to start!</div><div id='wheel_res' style=font-weight:900;font-size:18px;min-height:24px></div><div id='wheel_win' style=font-weight:900;font-size:26px;min-height:32px></div><div style=display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:8px><button class='btn btn-dark' onclick="setStake(1)">R1</button><button class='btn btn-dark' onclick="setStake(2)">R2</button><button class='btn btn-dark' onclick="setStake(5)">R5</button><button class='btn btn-dark' onclick="setStake(10)">R10</button></div><input id='wheel_stake' type='hidden' value='2'><div id='stakeShow' style=text-align:left;font-size:13px;font-weight:800;margin:6px 0>Stake: R2</div><button id='spinBtn' class='btn btn-purple' style=padding:18px;font-size:18px;opacity:0.5;pointer-events:none onclick="spinWheel()">PICK COLOR TO SPIN</button><button class='btn' style=background:#e2e8f0;color:#475569 onclick="location.href='/live'">BACK</button><script>
+    return STYLE+f"""<div class=card><h2>🎡 COOLER WHEEL 💎</h2><div class='music-tag'>✨ Premium - No zero! All colors win</div><p id='bal' style=color:#16a34a;font-weight:900>Balance: R{user.balance:.2f}</p><div style=position:relative><div style=position:absolute;top:-8px;left:50%;transform:translateX(-50%);font-size:42px;z-index:10;filter:drop-shadow(0 0 8px gold)>👇</div><div id='wheel' style='width:300px;height:300px;margin:10px auto;border-radius:50%;border:10px solid #facc15;overflow:hidden;transform:rotate(0deg);background:white;box-shadow:0 0 30px #facc15aa, 0 0 60px #f97316aa'><svg viewBox="0 0 200 200" style=width:100%;height:100%>{svg}<circle cx="100" cy="100" r="20" fill="#0f172a" stroke="#facc15" stroke-width="4"/><circle cx="100" cy="100" r="8" fill="#facc15"/></svg></div></div><div style=text-align:left;font-weight:900;font-size:13px;margin:12px 0 6px 0>PICK COLOR:</div><div style=display:grid;grid-template-columns:repeat(4,1fr);gap:8px><button class='color-btn' style=background:#dc2626;color:white onclick="pickColor('red','RED',this)">🔴 RED x2</button><button class='color-btn' style=background:#eab308;color:black onclick="pickColor('yellow','YELLOW',this)">🟡 YEL x3</button><button class='color-btn' style=background:#16a34a;color:white onclick="pickColor('green','GREEN',this)">🟢 GREEN x2.5</button><button class='color-btn' style=background:#2563eb;color:white onclick="pickColor('blue','BLUE',this)">🔵 BLUE x2.5</button><button class='color-btn' style=background:#ea580c;color:white onclick="pickColor('orange','ORANGE',this)">🟠 ORANGE x4</button><button class='color-btn' style=background:#db2777;color:white onclick="pickColor('pink','PINK',this)">🩷 PINK x4</button><button class='color-btn' style=background:#7c3aed;color:white onclick="pickColor('purple','PURPLE',this)">🟣 PURPLE x5</button><button class='color-btn' style=background:#0891b2;color:white onclick="pickColor('cyan','CYAN',this)">🔷 CYAN x5</button></div><div id='picked' style=font-weight:900;margin:12px 0;min-height:20px;color:#9333ea>Pick color to start!</div><div id='wheel_res' style=font-weight:900;font-size:18px;min-height:24px></div><div id='wheel_win' style=font-weight:900;font-size:26px;min-height:32px></div><div style=display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:8px><button class='btn btn-dark' onclick="setStake(1)">R1</button><button class='btn btn-dark' onclick="setStake(2)">R2</button><button class='btn btn-dark' onclick="setStake(5)">R5</button><button class='btn btn-dark' onclick="setStake(10)">R10</button></div><input id='wheel_stake' type='hidden' value='2'><div id='stakeShow' style=text-align:left;font-size:13px;font-weight:800;margin:6px 0>Stake: R2</div><button id='spinBtn' class='btn btn-purple' style=padding:18px;font-size:18px;opacity:0.5;pointer-events:none onclick="spinWheel()">PICK COLOR TO SPIN</button><button class='btn' style=background:#e2e8f0;color:#475569 onclick="location.href='/live'">BACK</button><script>
         window.addEventListener('load', function(){{ setTimeout(function(){{ try{{ startRomanticAuto(); }}catch(e){{}} }},400); document.body.addEventListener('click', function(){{ try{{ startRomanticAuto(); }}catch(e){{}} }}, {{once:true}}); }});
         let selectedColor=null; let selectedLabel=null; let cr=0; let spinning=false;
         function setStake(v){{document.getElementById('wheel_stake').value=v;document.getElementById('stakeShow').innerText='Stake: R'+v;}}
@@ -202,23 +200,22 @@ def wheel_spin():
     try: stake=int(float(request.args.get('stake',2)))
     except: stake=2
     if stake<=0 or stake>1000: return {"error":"Invalid stake"}
-    color=request.args.get('color','red')
-    if stake>user.balance: return {"error":"No balance","win":0,"index":0,"landed_label":"0","balance":user.balance}
+    color=request.args.get('color','red').lower()
+    if stake>user.balance:
+        return {"error":"No balance R%.2f"%user.balance,"win":0,"index":0,"landed_label":"NO BAL","balance":user.balance}
     user.balance-=stake
-    color_map={'red':2,'yellow':3,'green':2.5,'blue':2.5,'orange':4,'pink':4,'purple':5,'cyan':5}
-    labels=["RED","YEL","GREEN","BLUE","ORANGE","PINK","PURPLE","CYAN","RED","YEL","GREEN","BLUE","ORANGE","PINK","PURPLE","CYAN"]
-    if random.random() < 0.32 and color in color_map:
-        win_idx_options = [i for i,l in enumerate(labels) if (color=='yellow' and l=='YEL') or l.lower()==color or (color=='red' and l=='RED')]
-        if not win_idx_options: win_idx_options=[0]
-        pick_idx = random.choice(win_idx_options)
+    labels=["RED","YELLOW","GREEN","BLUE","ORANGE","PINK","PURPLE","CYAN","RED","YELLOW","GREEN","BLUE","ORANGE","PINK","PURPLE","CYAN"]
+    payouts={'red':2,'yellow':3,'green':2.5,'blue':2.5,'orange':4,'pink':4,'purple':5,'cyan':5}
+    win_indices = [i for i,l in enumerate(labels) if l.lower()==color]
+    if random.random() < 0.35:
+        pick_idx = random.choice(win_indices)
     else:
         pick_idx = random.randint(0,15)
-    win=0
     landed = labels[pick_idx]
-    is_win = (landed.lower()==color) or (color=='yellow' and landed=='YEL')
-    if is_win:
-        win = round(stake*color_map[color],2)
-        user.balance+=win
+    win=0
+    if pick_idx in win_indices:
+        win = round(stake * payouts[color],2)
+        user.balance += win
     db.session.commit()
     return {"win":win,"index":pick_idx,"landed_label":landed,"balance":round(user.balance,2)}
 
