@@ -1,6 +1,6 @@
 from flask import Flask, request, session, redirect
 from flask_sqlalchemy import SQLAlchemy
-import random, json, os, hashlib, urllib.parse, math
+import random, json, os, hashlib, urllib.parse, math, time
 from datetime import datetime, timedelta
 from werkzeug.security import generate_password_hash, check_password_hash
 
@@ -172,7 +172,21 @@ def menu():
 def live_games():
     if 'uid' not in session: return redirect('/login')
     user=User.query.get(session['uid'])
-    return STYLE+f"""<div class=card><h2>🔴 LIVE GAMES 💕</h2><div class='music-tag'>🎹 Romantic music + low sounds inside</div><p style=color:#16a34a;font-weight:900>Balance: R{user.balance:.2f}</p><div class='game-card' onclick="location.href='/coin'" style=border-left:6px solid #facc15><b>🪙 COIN FLIP</b><span style=float:right>▶️</span></div><div class='game-card' onclick="location.href='/wheel'" style=border-left:6px solid #9333ea><b>🎡 WHEEL COLOR - NEW COOLER!</b><span style=float:right>▶️</span></div><div class='game-card' onclick="location.href='/slots'" style=border-left:6px solid #2563eb><b>🎰 SLOTS ONE BY ONE</b><span style=float:right>▶️</span></div><div class='game-card' onclick="location.href='/dice'" style=border-left:6px solid #16a34a><b>🎲 DICE THROW</b><span style=float:right>▶️</span></div><button class='btn' style=background:#e2e8f0;color:#475569;margin-top:16px onclick="location.href='/menu'">BACK TO MENU</button></div>"""
+    return STYLE+f"""<div class=card><h2>🔴 LIVE GAMES 💕</h2><div class='music-tag'>🎹 Romantic music inside</div><p style=color:#16a34a;font-weight:900>Balance: R{user.balance:.2f}</p><div class='game-card' onclick="location.href='/coin'" style=border-left:6px solid #facc15><b>🪙 COIN FLIP</b><span style=float:right>▶️</span></div><div class='game-card' onclick="location.href='/wheel'" style=border-left:6px solid #9333ea><b>🎡 AUTO WHEEL - LIVE TIMER!</b><span style=float:right>▶️</span></div><div class='game-card' onclick="location.href='/slots'" style=border-left:6px solid #2563eb><b>🎰 SLOTS ONE BY ONE</b><span style=float:right>▶️</span></div><div class='game-card' onclick="location.href='/dice'" style=border-left:6px solid #16a34a><b>🎲 DICE THROW</b><span style=float:right>▶️</span></div><button class='btn' style=background:#e2e8f0;color:#475569;margin-top:16px onclick="location.href='/menu'">BACK TO MENU</button></div>"""
+
+# ================= NEW AUTO WHEEL - DELETED OLD ONE =================
+WHEEL_ROUND_FILE="wheel_round.json"
+
+def get_wheel_round():
+    try:
+        with open(WHEEL_ROUND_FILE,"r") as f: data=json.load(f)
+        if time.time() > data['end_time']: raise Exception("expired")
+        return data
+    except:
+        labels=["RED","YELLOW","GREEN","BLUE","ORANGE","PINK","PURPLE","CYAN"]*2
+        data={"round_id":int(time.time()),"end_time":time.time()+35,"winning_index":random.randint(0,15),"labels":labels}
+        with open(WHEEL_ROUND_FILE,"w") as f: json.dump(data,f)
+        return data
 
 @app.route('/wheel')
 def wheel():
@@ -185,39 +199,77 @@ def wheel():
         x1=100+95*math.cos(a1); y1=100+95*math.sin(a1)
         x2=100+95*math.cos(a2); y2=100+95*math.sin(a2)
         svg+=f'<path d="M100,100 L{x1:.1f},{y1:.1f} A95,95 0 0,1 {x2:.1f},{y2:.1f} Z" fill="{colors[i]}" stroke="white" stroke-width="3"/>'
-    return STYLE+f"""<div class=card><h2>🎡 COOLER WHEEL 💎</h2><div class='music-tag'>✨ Premium - No zero! All colors win</div><p id='bal' style=color:#16a34a;font-weight:900>Balance: R{user.balance:.2f}</p><div style=position:relative><div style=position:absolute;top:-8px;left:50%;transform:translateX(-50%);font-size:42px;z-index:10;filter:drop-shadow(0 0 8px gold)>👇</div><div id='wheel' style='width:300px;height:300px;margin:10px auto;border-radius:50%;border:10px solid #facc15;overflow:hidden;transform:rotate(0deg);background:white;box-shadow:0 0 30px #facc15aa, 0 0 60px #f97316aa'><svg viewBox="0 0 200 200" style=width:100%;height:100%>{svg}<circle cx="100" cy="100" r="20" fill="#0f172a" stroke="#facc15" stroke-width="4"/><circle cx="100" cy="100" r="8" fill="#facc15"/></svg></div></div><div style=text-align:left;font-weight:900;font-size:13px;margin:12px 0 6px 0>PICK COLOR:</div><div style=display:grid;grid-template-columns:repeat(4,1fr);gap:8px><button class='color-btn' style=background:#dc2626;color:white onclick="pickColor('red','RED',this)">🔴 RED x2</button><button class='color-btn' style=background:#eab308;color:black onclick="pickColor('yellow','YELLOW',this)">🟡 YEL x3</button><button class='color-btn' style=background:#16a34a;color:white onclick="pickColor('green','GREEN',this)">🟢 GREEN x2.5</button><button class='color-btn' style=background:#2563eb;color:white onclick="pickColor('blue','BLUE',this)">🔵 BLUE x2.5</button><button class='color-btn' style=background:#ea580c;color:white onclick="pickColor('orange','ORANGE',this)">🟠 ORANGE x4</button><button class='color-btn' style=background:#db2777;color:white onclick="pickColor('pink','PINK',this)">🩷 PINK x4</button><button class='color-btn' style=background:#7c3aed;color:white onclick="pickColor('purple','PURPLE',this)">🟣 PURPLE x5</button><button class='color-btn' style=background:#0891b2;color:white onclick="pickColor('cyan','CYAN',this)">🔷 CYAN x5</button></div><div id='picked' style=font-weight:900;margin:12px 0;min-height:20px;color:#9333ea>Pick color to start!</div><div id='wheel_res' style=font-weight:900;font-size:18px;min-height:24px></div><div id='wheel_win' style=font-weight:900;font-size:26px;min-height:32px></div><div style=display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:8px><button class='btn btn-dark' onclick="setStake(1)">R1</button><button class='btn btn-dark' onclick="setStake(2)">R2</button><button class='btn btn-dark' onclick="setStake(5)">R5</button><button class='btn btn-dark' onclick="setStake(10)">R10</button></div><input id='wheel_stake' type='hidden' value='2'><div id='stakeShow' style=text-align:left;font-size:13px;font-weight:800;margin:6px 0>Stake: R2</div><button id='spinBtn' class='btn btn-purple' style=padding:18px;font-size:18px;opacity:0.5;pointer-events:none onclick="spinWheel()">PICK COLOR TO SPIN</button><button class='btn' style=background:#e2e8f0;color:#475569 onclick="location.href='/live'">BACK</button><script>
-        window.addEventListener('load', function(){{ setTimeout(function(){{ try{{ startRomanticAuto(); }}catch(e){{}} }},400); document.body.addEventListener('click', function(){{ try{{ startRomanticAuto(); }}catch(e){{}} }}, {{once:true}}); }});
-        let selectedColor=null; let selectedLabel=null; let cr=0; let spinning=false;
-        function setStake(v){{document.getElementById('wheel_stake').value=v;document.getElementById('stakeShow').innerText='Stake: R'+v;}}
-        function pickColor(color,label,el){{selectedColor=color; selectedLabel=label; document.querySelectorAll('.color-btn').forEach(b=>b.classList.remove('selected')); el.classList.add('selected'); document.getElementById('picked').innerText='Picked '+label+' - LET GO!'; let btn=document.getElementById('spinBtn'); btn.style.opacity='1'; btn.style.pointerEvents='auto'; btn.innerText='SPIN - '+label; beep(600,0.1,0.10);}}
-        function spinWheel(){{if(!selectedColor||spinning) return; spinning=true; let stake=document.getElementById('wheel_stake').value; document.getElementById('spinBtn').innerText='SPINNING...'; soundWheelSpin(); fetch('/wheel_spin?stake='+stake+'&color='+selectedColor).then(r=>r.json()).then(d=>{{if(d.error){{alert(d.error); spinning=false; document.getElementById('spinBtn').innerText='SPIN - '+selectedLabel; return;}}let center=d.index*22.5+11.25; let target=(360-center+360)%360; let finalRot=cr+2160+target; let w=document.getElementById('wheel'); w.style.transition='transform 4.5s cubic-bezier(0.1,0.9,0.2,1)'; w.style.transform='rotate('+finalRot+'deg)'; setTimeout(function(){{cr=finalRot%360; w.style.transition='none'; w.style.transform='rotate('+cr+'deg)'; document.getElementById('wheel_res').innerText='LANDED '+d.landed_label; if(d.win>0){{document.getElementById('wheel_win').innerText='YOU WON R'+d.win+'! 💰'; document.getElementById('wheel_win').style.color='#16a34a'; soundWheelWin(); w.style.boxShadow='0 0 40px #22c55e, 0 0 80px #22c55e';}} else{{document.getElementById('wheel_win').innerText='CLOSE! Landed '+d.landed_label; document.getElementById('wheel_win').style.color='#ef4444'; soundWheelLose();}} document.getElementById('bal').innerText='Balance: R'+d.balance.toFixed(2); document.getElementById('spinBtn').innerText='SPIN AGAIN - '+selectedLabel; spinning=false;}},4600);}});}}
-        </script></div>"""
+    return STYLE+f"""<div class=card><h2>🎡 AUTO WHEEL 🔴 LIVE</h2><div id='roundInfo' style=background:#0f172a;color:#facc15;padding:10px;border-radius:12px;font-weight:900;font-size:18px>⏳ NEXT SPIN: 30s</div><div style=background:#dcfce7;color:#166534;padding:6px;border-radius:8px;margin:8px 0;font-weight:800 id='betStatus'>✅ BETTING OPEN</div><p id='bal' style=color:#16a34a;font-weight:900>Balance: R{user.balance:.2f}</p><div style=position:relative><div style=position:absolute;top:-8px;left:50%;transform:translateX(-50%);font-size:42px;z-index:10>👇</div><div id='wheel' style='width:300px;height:300px;margin:10px auto;border-radius:50%;border:10px solid #facc15;overflow:hidden;transform:rotate(0deg);background:white;box-shadow:0 0 30px #facc15aa'><svg viewBox="0 0 200 200" style=width:100%;height:100%>{svg}<circle cx="100" cy="100" r="22" fill="#0f172a" stroke="#facc15" stroke-width="4"/><circle cx="100" cy="100" r="10" fill="#facc15"/></svg></div></div><div id='lastWin' style=font-weight:900;font-size:16px;min-height:20px>Last: -</div><div style=text-align:left;font-weight:900;font-size:13px;margin:8px 0>PICK FOR NEXT SPIN:</div><div style=display:grid;grid-template-columns:repeat(4,1fr);gap:8px><button class='color-btn' style=background:#dc2626;color:white onclick="pickColor('red','RED',this)">🔴 RED x2</button><button class='color-btn' style=background:#eab308;color:black onclick="pickColor('yellow','YELLOW',this)">🟡 YEL x3</button><button class='color-btn' style=background:#16a34a;color:white onclick="pickColor('green','GREEN',this)">🟢 GREEN x2.5</button><button class='color-btn' style=background:#2563eb;color:white onclick="pickColor('blue','BLUE',this)">🔵 BLUE x2.5</button><button class='color-btn' style=background:#ea580c;color:white onclick="pickColor('orange','ORANGE',this)">🟠 ORANGE x4</button><button class='color-btn' style=background:#db2777;color:white onclick="pickColor('pink','PINK',this)">🩷 PINK x4</button><button class='color-btn' style=background:#7c3aed;color:white onclick="pickColor('purple','PURPLE',this)">🟣 PURPLE x5</button><button class='color-btn' style=background:#0891b2;color:white onclick="pickColor('cyan','CYAN',this)">🔷 CYAN x5</button></div><div id='picked' style=font-weight:900;margin:10px 0;color:#9333ea>Pick color!</div><div id='myBets' style=text-align:left;font-size:12px;background:#f8fafc;padding:8px;border-radius:8px;min-height:20px>Your bets for next spin: none</div><div style=display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:8px><button class='btn btn-dark' onclick="setStake(1)">R1</button><button class='btn btn-dark' onclick="setStake(2)">R2</button><button class='btn btn-dark' onclick="setStake(5)">R5</button><button class='btn btn-dark' onclick="setStake(10)">R10</button></div><input id='wheel_stake' type='hidden' value='2'><div id='stakeShow' style=text-align:left;font-size:13px;font-weight:800>Stake: R2</div><button id='betBtn' class='btn btn-purple' style=padding:18px;font-size:18px;opacity:0.5;pointer-events:none onclick="placeBet()">PICK COLOR TO BET</button><button class='btn' style=background:#e2e8f0;color:#475569 onclick="location.href='/live'">BACK</button><script>
+let selectedColor=null;let selectedLabel=null;let cr=0;let myBetsForRound=[];let currentRoundId=0;let canBet=true;
+function setStake(v){{document.getElementById('wheel_stake').value=v;document.getElementById('stakeShow').innerText='Stake: R'+v;}}
+function pickColor(c,l,el){{if(!canBet){{alert('Betting closed! Wait next round');return;}}selectedColor=c;selectedLabel=l;document.querySelectorAll('.color-btn').forEach(b=>b.classList.remove('selected'));el.classList.add('selected');document.getElementById('picked').innerText='Picked '+l;let btn=document.getElementById('betBtn');btn.style.opacity='1';btn.style.pointerEvents='auto';btn.innerText='BET R'+document.getElementById('wheel_stake').value+' ON '+l;beep(600,0.1,0.10);}}
+function placeBet(){{if(!selectedColor||!canBet)return;let stake=document.getElementById('wheel_stake').value;fetch('/wheel_auto_bet?color='+selectedColor+'&stake='+stake+'&round='+currentRoundId).then(r=>r.json()).then(d=>{{if(d.error){{alert(d.error);return;}}document.getElementById('bal').innerText='Balance: R'+d.balance.toFixed(2);myBetsForRound.push(d.bet);updateMyBets();document.getElementById('picked').innerText='Bet placed! Add more or wait!';}});}}
+function updateMyBets(){{let h='Your bets for next spin:<br>';myBetsForRound.forEach(b=>{{h+=b.color.toUpperCase()+' R'+b.stake+' -> Win R'+b.potential+'<br>';}});document.getElementById('myBets').innerHTML=h;}}
+function updateRound(){{fetch('/wheel_auto_status').then(r=>r.json()).then(d=>{{currentRoundId=d.round_id;let left=Math.max(0,Math.floor(d.time_left));document.getElementById('roundInfo').innerText='⏳ NEXT SPIN: '+left+'s | Round #'+d.round_id;document.getElementById('lastWin').innerText='Last: '+d.last_win;if(d.status=='SPINNING'){{canBet=false;document.getElementById('betStatus').innerText='🔴 SPINNING - NO MORE BETS';document.getElementById('betStatus').style.background='#fee2e2';document.getElementById('betStatus').style.color='#dc2626';document.getElementById('betBtn').style.opacity='0.3';document.getElementById('betBtn').style.pointerEvents='none';document.getElementById('betBtn').innerText='SPINNING...';if(!window.spinningNow){{window.spinningNow=true;let w=document.getElementById('wheel');let center=d.winning_index*22.5+11.25;let target=(360-center+360)%360;let finalRot=cr+2160+target;w.style.transition='transform 5s cubic-bezier(0.1,0.9,0.2,1)';w.style.transform='rotate('+finalRot+'deg)';setTimeout(()=>{{cr=finalRot%360;w.style.transition='none';w.style.transform='rotate('+cr+'deg)';window.spinningNow=false;}},5200);}} }} else {{canBet=true;document.getElementById('betStatus').innerText='✅ BETTING OPEN - Pick color!';document.getElementById('betStatus').style.background='#dcfce7';document.getElementById('betStatus').style.color='#166534';}} if(d.just_finished){{if(d.my_win>0){{document.getElementById('lastWin').innerText='YOU WON R'+d.my_win+'! Landed '+d.last_label+' 💰';document.getElementById('lastWin').style.color='#16a34a';soundWheelWin();}} else if(d.last_label!='-'){{document.getElementById('lastWin').innerText='Landed '+d.last_label+' - '+(d.my_win==0&&myBetsForRound.length>0?'You lost':'');document.getElementById('lastWin').style.color='#ef4444';if(myBetsForRound.length>0) soundWheelLose();}} document.getElementById('bal').innerText='Balance: R'+d.balance.toFixed(2);myBetsForRound=[];updateMyBets();}} }});}}
+setInterval(updateRound,1000);updateRound();
+window.addEventListener('load',()=>{{setTimeout(()=>{{try{{startRomanticAuto();}}catch(e){{}}}},400);}});
+</script></div>"""
+
+@app.route('/wheel_auto_status')
+def wheel_auto_status():
+    if 'uid' not in session: return {"error":"login"}
+    data=get_wheel_round()
+    time_left=data['end_time']-time.time()
+    status="BETTING" if time_left>5 else "SPINNING"
+    just_finished=False
+    if time_left<=0:
+        labels=data['labels']
+        win_idx=data['winning_index']
+        win_label=labels[win_idx]
+        bets=session.get('wheel_bets',[])
+        my_win=0
+        for b in bets:
+            if b['round_id']==data['round_id']:
+                if b['color'].lower()==win_label.lower():
+                    my_win+=b['potential']
+        if my_win>0:
+            user=User.query.get(session['uid'])
+            user.balance+=my_win
+            db.session.commit()
+        session['wheel_bets']=[]
+        session['last_win_label']=win_label
+        session['last_win_amount']=my_win
+        session.modified=True
+        try: os.remove(WHEEL_ROUND_FILE)
+        except: pass
+        data=get_wheel_round()
+        time_left=data['end_time']-time.time()
+        just_finished=True
+    user=User.query.get(session['uid'])
+    return {"round_id":data['round_id'],"time_left":time_left,"status":status,"winning_index":data['winning_index'],"last_win":session.get('last_win_label','-'),"last_label":session.get('last_win_label','-'),"just_finished":just_finished,"my_win":session.get('last_win_amount',0) if just_finished else 0,"balance":user.balance}
+
+@app.route('/wheel_auto_bet')
+def wheel_auto_bet():
+    if 'uid' not in session: return {"error":"login"}
+    data=get_wheel_round()
+    time_left=data['end_time']-time.time()
+    if time_left<5: return {"error":"Betting closed! Spinning..."}
+    try: stake=int(float(request.args.get('stake',2)))
+    except: stake=2
+    color=request.args.get('color','red').lower()
+    payouts={'red':2,'yellow':3,'green':2.5,'blue':2.5,'orange':4,'pink':4,'purple':5,'cyan':5}
+    if color not in payouts: return {"error":"Invalid color"}
+    user=User.query.get(session['uid'])
+    if stake>user.balance: return {"error":"No balance R%.2f"%user.balance}
+    user.balance-=stake
+    potential=round(stake*payouts[color],2)
+    bet={"round_id":data['round_id'],"color":color,"stake":stake,"potential":potential}
+    if 'wheel_bets' not in session: session['wheel_bets']=[]
+    session['wheel_bets'].append(bet)
+    session.modified=True
+    db.session.commit()
+    return {"balance":user.balance,"bet":bet}
 
 @app.route('/wheel_spin')
 def wheel_spin():
-    if 'uid' not in session: return redirect('/login')
-    user=User.query.get(session['uid'])
-    try: stake=int(float(request.args.get('stake',2)))
-    except: stake=2
-    if stake<=0 or stake>1000: return {"error":"Invalid stake"}
-    color=request.args.get('color','red').lower()
-    if stake>user.balance:
-        return {"error":"No balance R%.2f"%user.balance,"win":0,"index":0,"landed_label":"NO BAL","balance":user.balance}
-    user.balance-=stake
-    labels=["RED","YELLOW","GREEN","BLUE","ORANGE","PINK","PURPLE","CYAN","RED","YELLOW","GREEN","BLUE","ORANGE","PINK","PURPLE","CYAN"]
-    payouts={'red':2,'yellow':3,'green':2.5,'blue':2.5,'orange':4,'pink':4,'purple':5,'cyan':5}
-    win_indices = [i for i,l in enumerate(labels) if l.lower()==color]
-    if random.random() < 0.35:
-        pick_idx = random.choice(win_indices)
-    else:
-        pick_idx = random.randint(0,15)
-    landed = labels[pick_idx]
-    win=0
-    if pick_idx in win_indices:
-        win = round(stake * payouts[color],2)
-        user.balance += win
-    db.session.commit()
-    return {"win":win,"index":pick_idx,"landed_label":landed,"balance":round(user.balance,2)}
+    return redirect('/wheel')
+
+# ================= END AUTO WHEEL =================
 
 @app.route('/slots')
 def slots():
