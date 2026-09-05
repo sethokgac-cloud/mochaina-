@@ -27,6 +27,11 @@ def safe_init():
                 db.session.commit()
         except Exception as e: print(e)
 
+PAYFAST_MERCHANT_ID = "10000100"
+PAYFAST_MERCHANT_KEY = "46f0cd694581a"
+PAYFAST_PASSPHRASE = ""
+PAYFAST_URL = "https://www.payfast.co.za/eng/process"
+
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(50), unique=True)
@@ -74,8 +79,49 @@ def next_draw_str():
         if total<0: total=0
         return f"{total//3600:02}:{(total%3600)//60:02}:{total%60:02}"
     except: return "12:00:00"
+def get_next_draw_timestamp():
+    try: return int(get_next_draw_time().timestamp()*1000)
+    except: return int((datetime.now()+timedelta(hours=1)).timestamp()*1000)
 
-STYLE="""<meta name="viewport" content="width=device-width, initial-scale=1"><style>body{background:#020617;color:white;font-family:Arial;text-align:center;margin:0}.card{background:white;color:#0f172a;border-radius:20px;padding:18px;max-width:400px;margin:15px auto}input,select{width:100%;box-sizing:border-box;padding:12px;margin:6px 0;border-radius:10px;border:2px solid #e2e8f0}.btn{border:none;padding:12px;border-radius:10px;font-weight:900;width:100%;cursor:pointer;margin:5px 0}.btn-green{background:#16a34a;color:white}.btn-dark{background:#14532d;color:white}.btn-blue{background:#2563eb;color:white}.btn-orange{background:#f97316;color:white}.btn-purple{background:#9333ea;color:white}.btn-red{background:#dc2626;color:white}.btn-gold{background:linear-gradient(90deg,#facc15,#f97316);color:black}.jackpot{background:black;color:gold;font-size:22px;font-weight:900;padding:8px 16px;border-radius:8px;display:inline-block;border:2px solid #facc15}.color-btn{padding:14px 6px;border-radius:12px;border:3px solid white;font-weight:900;font-size:12px;cursor:pointer}.color-btn.selected{border-color:black;transform:scale(1.08)}</style>"""
+def auto_draw_if_due():
+    try:
+        last_file="last_draw.txt"
+        now=datetime.now()
+        last=None
+        if os.path.exists(last_file):
+            with open(last_file,"r") as f: last=datetime.fromisoformat(f.read().strip())
+        should_draw=False
+        if last:
+            today_12=now.replace(hour=12,minute=1,second=0,microsecond=0)
+            today_17=now.replace(hour=17,minute=1,second=0,microsecond=0)
+            if last < today_12 <= now: should_draw=True
+            if last < today_17 <= now: should_draw=True
+        if should_draw:
+            win=sorted(random.sample(range(1,37),4)); wing=random.randint(1,4)
+            with app.app_context():
+                d=Draw(numbers=",".join(map(str,win)), wing=wing, date=now.strftime("%Y-%m-%d %H:%M")); db.session.add(d); db.session.commit()
+                tickets=Ticket.query.all(); won=False
+                for tick in tickets:
+                    user=User.query.get(tick.user_id)
+                    if not user: continue
+                    try: nums=list(map(int,tick.numbers.split(',')))
+                    except: continue
+                    matches=len(set(nums)&set(win)); w_match=(tick.wing==wing); prize=0
+                    if matches==4 and w_match: prize=get_jackpot(); won=True
+                    elif matches==4: prize=tick.bet*100
+                    elif matches==3 and w_match: prize=tick.bet*50
+                    elif matches==3: prize=tick.bet*10
+                    elif matches==2 and w_match: prize=tick.bet*5
+                    if prize>0: user.balance+=prize
+                if won: save_jackpot(500000.0)
+                db.session.query(Ticket).delete(); db.session.commit()
+            with open(last_file,"w") as f: f.write(now.isoformat())
+        else:
+            if not os.path.exists(last_file):
+                with open(last_file,"w") as f: f.write(now.isoformat())
+    except Exception as e: print(e)
+
+STYLE="""<meta name="viewport" content="width=device-width, initial-scale=1"><link rel="manifest" href="/static/manifest.json"><meta name="theme-color" content="#facc15"><style>body{background:#020617;color:white;font-family:Arial;text-align:center;margin:0}.header{padding:15px}.header h1{color:#facc15;font-size:26px;font-weight:900;margin:0}.card{background:white;color:#0f172a;border-radius:20px;padding:18px;max-width:400px;margin:15px auto}input,select{width:100%;box-sizing:border-box;padding:12px;margin:6px 0;border-radius:10px;border:2px solid #e2e8f0}.btn{border:none;padding:12px;border-radius:10px;font-weight:900;width:100%;cursor:pointer;margin:5px 0}.btn-green{background:#16a34a;color:white}.btn-dark{background:#14532d;color:white}.btn-blue{background:#2563eb;color:white}.btn-orange{background:#f97316;color:white}.btn-purple{background:#9333ea;color:white}.btn-red{background:#dc2626;color:white}.btn-gold{background:linear-gradient(90deg,#facc15,#f97316);color:black}.grid{display:grid;grid-template-columns:repeat(6,1fr);gap:4px;margin:10px 0}.num-btn{padding:10px;background:white;border:2px solid #e2e8f0;border-radius:8px;font-weight:700}.num-btn.selected{background:#86efac;border-color:#16a34a}.wing-btn{padding:10px 15px;background:white;border:2px solid #e2e8f0;border-radius:8px;margin:2px}.wing-btn.selected{background:#fde047;border-color:#eab308}.jackpot{background:black;color:gold;font-size:22px;font-weight:900;padding:8px 16px;border-radius:8px;display:inline-block;border:2px solid #facc15}.timer-box{background:#fee2e2;color:#dc2626;font-weight:900;padding:8px 12px;border-radius:10px;display:inline-block;margin:6px 0;white-space:nowrap;letter-spacing:1px;font-family:monospace;font-size:16px;border:1px solid #fecaca}.tabs{display:flex;gap:4px;margin:10px 0}.tab{flex:1;padding:8px;background:#e2e8f0;border-radius:8px;cursor:pointer;font-weight:700;font-size:10px}.tab.active{background:#2563eb;color:white}.tabcontent{border:1px solid #eee;padding:10px;border-radius:10px}.game-card{border:2px solid #fde68a;border-radius:16px;padding:14px;margin:10px 0;background:linear-gradient(135deg,#fffbeb,#fef3c7);cursor:pointer;text-align:left;color:#000}.color-btn{padding:14px 6px;border-radius:12px;border:3px solid white;font-weight:900;font-size:12px;cursor:pointer}.color-btn.selected{border-color:black;transform:scale(1.08)}</style>"""
 
 @app.route('/')
 def home():
@@ -85,12 +131,16 @@ def home():
 @app.route('/login', methods=['GET','POST'])
 def login():
     if request.method=='POST':
-        u=request.form['username']; p=request.form['password']
-        user=User.query.filter_by(username=u).first()
-        if user and (check_password_hash(user.password, p) or user.password==p):
-            session['uid']=user.id; session['uname']=u; return redirect('/menu')
-        return STYLE+"<div class=card><p style=color:red>Wrong</p><button class='btn btn-red' onclick=\"location.href='/login'\">Back</button></div>"
-    return STYLE+"""<div class=card><h2>LOGIN</h2><form method='post'><input name='username' placeholder='Username' required><input name='password' type='password' required><button class='btn btn-green'>Login</button></form><button class='btn btn-blue' onclick="location.href='/register'">Register</button></div>"""
+        try:
+            u=request.form['username']; p=request.form['password']
+            user=User.query.filter_by(username=u).first()
+            if user and (check_password_hash(user.password, p) or user.password==p):
+                if user.password==p:
+                    user.password=generate_password_hash(p); db.session.commit()
+                session['uid']=user.id; session['uname']=u; return redirect('/menu')
+        except: pass
+        return STYLE+"<div class=card><p style=color:red>Wrong login</p><button class='btn btn-red' onclick=\"location.href='/login'\">Back</button></div>"
+    return STYLE+"""<div class=card><h2>LOGIN</h2><form method='post'><input name='username' placeholder='Username' required><input name='password' type='password' required><button class='btn btn-green'>Login</button></form><button class='btn btn-blue' onclick="location.href='/register'">Register R100 FREE</button></div>"""
 
 @app.route('/register', methods=['GET','POST'])
 def register():
@@ -107,15 +157,14 @@ def register():
 def menu():
     if 'uid' not in session: return redirect('/login')
     user=User.query.get(session['uid'])
-    return STYLE+f"""<div class=card><div class=jackpot>R{get_jackpot():,.2f}</div><p style=color:green;font-weight:900>Balance: R{user.balance:.2f}</p><button class='btn btn-green' onclick="location.href='/play'">PLAY LOTTO</button><button class='btn' style=background:linear-gradient(90deg,#ef4444,#9333ea);color:white;padding:18px;margin-top:6px' onclick="location.href='/live'">🔴 LIVE GAMES</button><button class='btn' style=background:gray;color:white onclick="location.href='/logout'">LOGOUT</button></div>"""
+    return STYLE+f"""<div class=card><p>💰 JACKPOT</p><div class=jackpot>R{get_jackpot():,.2f}</div><p style=color:green;font-weight:900>Balance: R{user.balance:.2f}</p><button class='btn btn-green' onclick="location.href='/play'">PLAY LOTTO</button><button class='btn' style=background:linear-gradient(90deg,#ef4444,#9333ea);color:white;padding:18px;margin-top:6px' onclick="location.href='/live'">🔴 LIVE GAMES</button><button class='btn' style=background:gray;color:white onclick="location.href='/logout'">LOGOUT</button></div>"""
 
 @app.route('/live')
 def live_games():
     if 'uid' not in session: return redirect('/login')
     user=User.query.get(session['uid'])
-    return STYLE+f"""<div class=card><h2>🔴 LIVE GAMES</h2><p style=color:#16a34a;font-weight:900>Balance: R{user.balance:.2f}</p><div style="border:2px solid #fde68a;border-radius:16px;padding:14px;margin:10px 0;background:#fffbeb;cursor:pointer" onclick="location.href='/wheel'"><b>🎡 WHEEL - FAST SPIN</b></div><div style="border:2px solid #e2e8f0;border-radius:16px;padding:14px;margin:10px 0;background:white;cursor:pointer" onclick="location.href='/coin'"><b>🪙 COIN</b></div><div style="border:2px solid #e2e8f0;border-radius:16px;padding:14px;margin:10px 0;background:white;cursor:pointer" onclick="location.href='/slots'"><b>🎰 SLOTS</b></div><div style="border:2px solid #e2e8f0;border-radius:16px;padding:14px;margin:10px 0;background:white;cursor:pointer" onclick="location.href='/dice'"><b>🎲 DICE</b></div><button class='btn' style=background:#e2e8f0 onclick="location.href='/menu'">BACK</button></div>"""
+    return STYLE+f"""<div class=card><h2>🔴 LIVE GAMES</h2><p style=color:#16a34a;font-weight:900>Balance: R{user.balance:.2f}</p><div style="border:2px solid #fde68a;border-radius:16px;padding:14px;margin:10px 0;background:#fffbeb;cursor:pointer;text-align:left" onclick="location.href='/wheel'"><b>🎡 WHEEL - FAST SPIN</b><span style=float:right>▶️</span></div><div style="border:2px solid #e2e8f0;border-radius:16px;padding:14px;margin:10px 0;background:white;cursor:pointer;text-align:left" onclick="location.href='/coin'"><b>🪙 COIN FLIP</b><span style=float:right>▶️</span></div><div style="border:2px solid #e2e8f0;border-radius:16px;padding:14px;margin:10px 0;background:white;cursor:pointer;text-align:left" onclick="location.href='/slots'"><b>🎰 SLOTS</b><span style=float:right>▶️</span></div><div style="border:2px solid #e2e8f0;border-radius:16px;padding:14px;margin:10px 0;background:white;cursor:pointer;text-align:left" onclick="location.href='/dice'"><b>🎲 DICE</b><span style=float:right>▶️</span></div><button class='btn' style=background:#e2e8f0;color:#475569;margin-top:16px onclick="location.href='/menu'">BACK</button></div>"""
 
-# WHEEL - GUARANTEED ROTATE - FAST LIKE REAL WHEEL
 @app.route('/wheel')
 def wheel():
     if 'uid' not in session: return redirect('/login')
@@ -130,7 +179,8 @@ def wheel():
     return STYLE+f"""
 <div class=card style=background:white;padding:14px>
 <h2 style=margin:0;font-weight:900>🎡 WHEEL - FAST SPIN</h2>
-<div style=background:#0f172a;color:#facc15;padding:10px;border-radius:12px;font-weight:900;margin:8px 0>⏳ SPIN IN: <span id='countdown'>10</span>s | #<span id='roundNum'>1000</span></div>
+<div style=background:#0f172a;color:#facc15;padding:10px;border-radius:12px;font-weight:900;margin:8px 0>⏳ AUTO SPIN IN: <span id='countdown'>10</span>s</div>
+<div style=background:#dcfce7;padding:8px;border-radius:10px;font-weight:800;font-size:12px>✅ BET FOR NEXT WHILE SPINNING!</div>
 <p id='bal' style=color:#16a34a;font-weight:900>Balance: R{user.balance:.2f}</p>
 <div style=position:relative;width:300px;height:300px;margin:10px auto>
 <div style=position:absolute;top:-10px;left:50%;transform:translateX(-50%);font-size:36px;z-index:10>👇</div>
@@ -152,7 +202,7 @@ def wheel():
 <button class='btn btn-dark' onclick="setS(2)">R2</button><button class='btn btn-dark' onclick="setS(5)">R5</button><button class='btn btn-dark' onclick="setS(10)">R10</button><button class='btn btn-dark' onclick="setS(20)">R20</button></div>
 <input id='stake' type='hidden' value='5'><div id='stakeShow' style=font-size:12px;font-weight:800;margin:6px 0>Stake: R5</div>
 <button id='betBtn' class='btn btn-gold' style=opacity:0.5 onclick="placeBet()">PICK COLOR</button>
-<button class='btn btn-purple' style=margin-top:8px onclick="doSpin()">🔥 TEST SPIN NOW (if timer stuck)</button>
+<button class='btn btn-purple' style=margin-top:8px onclick="doSpin()">🔥 FORCE SPIN NOW</button>
 <div id='winBox' style=font-weight:900;font-size:20px;min-height:28px></div>
 <button class='btn' style=background:#e2e8f0;margin-top:8px onclick="location.href='/live'">BACK</button>
 <script>
@@ -171,8 +221,6 @@ setInterval(function(){{
 function doSpin(){{
   if(spinning) return;
   spinning=true;
-  timeLeft=0;
-  document.getElementById('countdown').innerText='0 - SPINNING!';
   var wheel=document.getElementById('wheel');
   fetch('/wheel_spin_next').then(r=>r.json()).then(d=>{{
     var center=d.index*30+15;
@@ -181,20 +229,19 @@ function doSpin(){{
     var total=1800+target;
     var finalRot=start+total;
     var startTime=null;
-    var duration=3500;
+    var duration=4000;
     function easeOut(t){{return 1-Math.pow(1-t,4);}}
     function animate(now){{
       if(!startTime) startTime=now;
       var p=Math.min((now-startTime)/duration,1);
-      var e=easeOut(p);
-      var cur=start+total*e;
+      var cur=start+total*easeOut(p);
       wheel.style.transform='rotate('+cur+'deg)';
       if(p<1) requestAnimationFrame(animate);
       else{{
         cr=finalRot%360;
         wheel.style.transform='rotate('+cr+'deg)';
         document.getElementById('lastWin').innerText='Last: '+d.landed;
-        document.getElementById('winBox').innerText=d.win>0?'YOU WON R'+d.win+'!':'LOST - '+d.landed;
+        document.getElementById('winBox').innerText=d.win>0?'WON R'+d.win+'!':'LOST - '+d.landed;
         document.getElementById('bal').innerText='Balance: R'+d.balance.toFixed(2);
         timeLeft=10;
         spinning=false;
@@ -238,13 +285,27 @@ def wheel_spin_next():
     return {"landed":landed,"index":idx,"win":win,"balance":round(user.balance,2)}
 
 @app.route('/play')
-def play(): return STYLE+"<div class=card>PLAY</div>"
+def play():
+    if 'uid' not in session: return redirect('/login')
+    user=User.query.get(session['uid'])
+    return STYLE+f"<div class=card><p>Balance R{user.balance:.2f}</p><p>Play lotto - your original code here</p><button class='btn' onclick=\"location.href='/menu'\">BACK</button></div>"
+
 @app.route('/coin')
-def coin(): return STYLE+f"<div class=card><h2>COIN</h2><button class='btn btn-green' onclick=\"fetch('/wheel_spin_next').then(r=>r.json()).then(d=>alert(d.landed))\">TEST</button><button class='btn' onclick=\"location.href='/live'\">BACK</button></div>"
+def coin_page():
+    if 'uid' not in session: return redirect('/login')
+    user=User.query.get(session['uid'])
+    return STYLE+f"<div class=card><h2>COIN</h2><p>R{user.balance:.2f}</p><button class='btn btn-green' onclick=\"fetch('/wheel_spin_next').then(r=>r.json()).then(d=>alert(d.landed))\">TEST SPIN API</button><button class='btn' onclick=\"location.href='/live'\">BACK</button></div>"
+
 @app.route('/slots')
-def slots(): return STYLE+"<div class=card>SLOTS</div>"
+def slots_page():
+    if 'uid' not in session: return redirect('/login')
+    return STYLE+"<div class=card><h2>SLOTS</h2><button class='btn' onclick=\"location.href='/live'\">BACK</button></div>"
+
 @app.route('/dice')
-def dice(): return STYLE+"<div class=card>DICE</div>"
+def dice_page():
+    if 'uid' not in session: return redirect('/login')
+    return STYLE+"<div class=card><h2>DICE</h2><button class='btn' onclick=\"location.href='/live'\">BACK</button></div>"
+
 @app.route('/logout')
 def logout(): session.clear(); return redirect('/login')
 
