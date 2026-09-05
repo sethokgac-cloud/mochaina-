@@ -27,11 +27,6 @@ def safe_init():
                 db.session.commit()
         except Exception as e: print(e)
 
-PAYFAST_MERCHANT_ID = "10000100"
-PAYFAST_MERCHANT_KEY = "46f0cd694581a"
-PAYFAST_PASSPHRASE = ""
-PAYFAST_URL = "https://www.payfast.co.za/eng/process"
-
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(50), unique=True)
@@ -121,7 +116,7 @@ def auto_draw_if_due():
                 with open(last_file,"w") as f: f.write(now.isoformat())
     except Exception as e: print(e)
 
-STYLE="""<meta name="viewport" content="width=device-width, initial-scale=1"><link rel="manifest" href="/static/manifest.json"><meta name="theme-color" content="#facc15"><script>if('serviceWorker' in navigator){navigator.serviceWorker.register('/static/sw.js')}</script><style>body{background:#020617;color:white;font-family:Arial;text-align:center;margin:0}.header{padding:15px}.header h1{color:#facc15;font-size:26px;font-weight:900;margin:0}.card{background:white;color:#0f172a;border-radius:20px;padding:18px;max-width:400px;margin:15px auto}input,select{width:100%;box-sizing:border-box;padding:12px;margin:6px 0;border-radius:10px;border:2px solid #e2e8f0}.btn{border:none;padding:12px;border-radius:10px;font-weight:900;width:100%;cursor:pointer;margin:5px 0}.btn-green{background:#16a34a;color:white}.btn-dark{background:#14532d;color:white}.btn-blue{background:#2563eb;color:white}.btn-orange{background:#f97316;color:white}.btn-purple{background:#9333ea;color:white}.btn-red{background:#dc2626;color:white}.btn-gold{background:linear-gradient(90deg,#facc15,#f97316);color:black}.grid{display:grid;grid-template-columns:repeat(6,1fr);gap:4px;margin:10px 0}.num-btn{padding:10px;background:white;border:2px solid #e2e8f0;border-radius:8px;font-weight:700}.num-btn.selected{background:#86efac;border-color:#16a34a}.wing-btn{padding:10px 15px;background:white;border:2px solid #e2e8f0;border-radius:8px;margin:2px}.wing-btn.selected{background:#fde047;border-color:#eab308}.jackpot{background:black;color:gold;font-size:22px;font-weight:900;padding:8px 16px;border-radius:8px;display:inline-block;border:2px solid #facc15}.timer-box{background:#fee2e2;color:#dc2626;font-weight:900;padding:8px 12px;border-radius:10px;display:inline-block;margin:6px 0;white-space:nowrap;letter-spacing:1px;font-family:monospace;font-size:16px;border:1px solid #fecaca}.tabs{display:flex;gap:4px;margin:10px 0}.tab{flex:1;padding:8px;background:#e2e8f0;border-radius:8px;cursor:pointer;font-weight:700;font-size:10px}.tab.active{background:#2563eb;color:white}.tabcontent{border:1px solid #eee;padding:10px;border-radius:10px}.install-banner{background:#facc15;color:black;padding:10px;border-radius:10px;margin:10px;font-weight:900;display:none}.game-card{border:2px solid #fde68a;border-radius:16px;padding:14px;margin:10px 0;background:linear-gradient(135deg,#fffbeb,#fef3c7);cursor:pointer;text-align:left;color:#000}.reel-box{width:80px;height:90px;background:white;border-radius:16px;overflow:hidden;box-shadow:0 4px 10px rgba(0,0,0,0.2);border:3px solid white;display:flex;align-items:center;justify-content:center}.reel{font-size:42px;font-weight:900;transition:0.1s}.reel.spinning{filter:blur(3px);transform:scaleY(1.2)}.table{background:#0f172a;border-radius:20px;height:340px;position:relative;overflow:hidden}.dice{width:68px;height:68px;background:linear-gradient(145deg,#fff,#f1e9de);border-radius:14px;position:absolute;left:50%;bottom:40px;transform:translateX(-50%);display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(3,1fr);padding:7px;gap:2px;box-shadow:0 8px 20px rgba(0,0,0,0.6);z-index:20;border:2px solid #e8dcc8;opacity:0}.dice2{z-index:21}.dot{width:11px;height:11px;background:#0f172a;border-radius:50%;justify-self:center;align-self:center}.hidden{visibility:hidden}.hand{position:absolute;bottom:25px;left:50%;transform:translateX(-50%);font-size:82px;z-index:10}@keyframes throw1{0%{bottom:45px;transform:translateX(-50%) rotate(0deg) scale(0.5);opacity:0}30%{bottom:190px;transform:translateX(-75px) rotate(360deg) scale(1.2);opacity:1}60%{bottom:245px;transform:translateX(-85px) rotate(720deg) scale(1.1);opacity:1}100%{bottom:115px;transform:translateX(-78px) rotate(1080deg) scale(1);opacity:1}}@keyframes throw2{0%{bottom:45px;transform:translateX(-50%) rotate(0deg) scale(0.5);opacity:0}35%{bottom:200px;transform:translateX(30px) rotate(-360deg) scale(1.2);opacity:1}65%{bottom:255px;transform:translateX(38px) rotate(-720deg) scale(1.1);opacity:1}100%{bottom:115px;transform:translateX(28px) rotate(-1080deg) scale(1);opacity:1}}@keyframes handOut{0%{transform:translateX(-50%) scale(1);opacity:1}100%{transform:translateX(-50%) translateY(130px) scale(0.3);opacity:0}}.throw1{animation:throw1 1.5s cubic-bezier(0.2,0.8,0.3,1) forwards}.throw2{animation:throw2 1.6s cubic-bezier(0.2,0.8,0.3,1) forwards}.handThrow{animation:handOut 0.5s ease 0.3s forwards}.coinBox{height:280px;background:radial-gradient(at center,#1e293b,#020617);border-radius:20px;display:flex;align-items:center;justify-content:center;border:3px solid #1e293b;perspective:800px}.coin{width:150px;height:150px;border-radius:50%;background:linear-gradient(145deg,#facc15,#f97316);display:flex;align-items:center;justify-content:center;font-size:55px;font-weight:900;color:#000;box-shadow:0 0 30px #facc15aa,inset 0 0 20px #fff8;border:4px solid #fde047}.color-btn{padding:14px 6px;border-radius:12px;border:3px solid white;font-weight:900;font-size:12px;cursor:pointer;transition:0.2s}.color-btn.selected{border-color:black;transform:scale(1.05);box-shadow:0 6px 15px rgba(0,0,0,0.4)}.music-tag{background:linear-gradient(90deg,#fce7f3,#f5d0fe);color:#831843;padding:6px 12px;border-radius:20px;font-size:11px;font-weight:900;display:inline-block;margin-bottom:8px;border:1px solid #f9a8d4}</style><script>let sel=[];let w=null;function toggle(n,el){if(sel.includes(n)){sel=sel.filter(x=>x!=n);el.classList.remove('selected')}else{if(sel.length<4){sel.push(n);el.classList.add('selected')}}document.getElementById('your4').innerText='Your 4: '+sel.join(',');document.getElementById('nums_input').value=sel.join(',');}function pickWing(n,el){w=n;document.querySelectorAll('.wing-btn').forEach(b=>b.classList.remove('selected'));el.classList.add('selected');document.getElementById('yourW').innerText='Wing: W'+n;document.getElementById('wing_input').value=n;}function autoPick(){sel=[];document.querySelectorAll('.num-btn').forEach(b=>b.classList.remove('selected'));let nums=[];while(nums.length<4){let r=Math.floor(Math.random()*36)+1;if(!nums.includes(r))nums.push(r)}nums.forEach(n=>{sel.push(n);document.getElementById('btn'+n).classList.add('selected')});let rw=Math.floor(Math.random()*4)+1;pickWing(rw,document.getElementById('wbtn'+rw));document.getElementById('your4').innerText='Your 4: '+sel.join(',');document.getElementById('nums_input').value=sel.join(',');}function showTab(t){document.querySelectorAll('.tabcontent').forEach(c=>c.style.display='none');document.getElementById(t).style.display='block';document.querySelectorAll('.tab').forEach(b=>b.classList.remove('active'));document.getElementById('tab-'+t).classList.add('active');}function dots(n){let m={1:[[1,1]],2:[[0,0],[2,2]],3:[[0,0],[1,1],[2,2]],4:[[0,0],[0,2],[2,0],[2,2]],5:[[0,0],[0,2],[1,1],[2,0],[2,2]],6:[[0,0],[0,2],[1,0],[1,2],[2,0],[2,2]]};let p={};m[n].forEach(a=>p[a[0]+'-'+a[1]]=1);let h='';for(let r=0;r<3;r++){for(let c=0;c<3;c++){h+=p[r+'-'+c]?'<div class="dot"></div>':'<div class="dot hidden"></div>';}}return h;}function setDice(id,n){let el=document.getElementById(id);if(el)el.innerHTML=dots(n);}</script>"""
+STYLE="""<meta name="viewport" content="width=device-width, initial-scale=1"><link rel="manifest" href="/static/manifest.json"><meta name="theme-color" content="#facc15"><script>if('serviceWorker' in navigator){navigator.serviceWorker.register('/static/sw.js')}</script><style>body{background:#020617;color:white;font-family:Arial;text-align:center;margin:0}.header{padding:15px}.header h1{color:#facc15;font-size:26px;font-weight:900;margin:0}.card{background:white;color:#0f172a;border-radius:20px;padding:18px;max-width:400px;margin:15px auto}input,select{width:100%;box-sizing:border-box;padding:12px;margin:6px 0;border-radius:10px;border:2px solid #e2e8f0}.btn{border:none;padding:12px;border-radius:10px;font-weight:900;width:100%;cursor:pointer;margin:5px 0}.btn-green{background:#16a34a;color:white}.btn-dark{background:#14532d;color:white}.btn-blue{background:#2563eb;color:white}.btn-orange{background:#f97316;color:white}.btn-purple{background:#9333ea;color:white}.btn-red{background:#dc2626;color:white}.btn-gold{background:linear-gradient(90deg,#facc15,#f97316);color:black}.grid{display:grid;grid-template-columns:repeat(6,1fr);gap:4px;margin:10px 0}.num-btn{padding:10px;background:white;border:2px solid #e2e8f0;border-radius:8px;font-weight:700}.num-btn.selected{background:#86efac;border-color:#16a34a}.wing-btn{padding:10px 15px;background:white;border:2px solid #e2e8f0;border-radius:8px;margin:2px}.wing-btn.selected{background:#fde047;border-color:#eab308}.jackpot{background:black;color:gold;font-size:22px;font-weight:900;padding:8px 16px;border-radius:8px;display:inline-block;border:2px solid #facc15}.timer-box{background:#fee2e2;color:#dc2626;font-weight:900;padding:8px 12px;border-radius:10px;display:inline-block;margin:6px 0;white-space:nowrap;letter-spacing:1px;font-family:monospace;font-size:16px;border:1px solid #fecaca}.color-btn{padding:14px 6px;border-radius:12px;border:3px solid white;font-weight:900;font-size:12px;cursor:pointer;transition:0.2s}.color-btn.selected{border-color:black;transform:scale(1.05);box-shadow:0 6px 15px rgba(0,0,0,0.4)}</style><script>let sel=[];let w=null;function toggle(n,el){if(sel.includes(n)){sel=sel.filter(x=>x!=n);el.classList.remove('selected')}else{if(sel.length<4){sel.push(n);el.classList.add('selected')}}document.getElementById('your4').innerText='Your 4: '+sel.join(',');document.getElementById('nums_input').value=sel.join(',');}function pickWing(n,el){w=n;document.querySelectorAll('.wing-btn').forEach(b=>b.classList.remove('selected'));el.classList.add('selected');document.getElementById('yourW').innerText='Wing: W'+n;document.getElementById('wing_input').value=n;}</script>"""
 
 @app.route('/')
 def home():
@@ -140,7 +135,7 @@ def login():
                 session['uid']=user.id; session['uname']=u; return redirect('/menu')
         except: pass
         return STYLE+"<div class=card><p style=color:red>Wrong login</p><button class='btn btn-red' onclick=\"location.href='/login'\">Back</button></div>"
-    return STYLE+"""<div class=header><h1 style=color:#facc15>⭐ Mochaina Lotto 🇿🇦</h1></div><div style=background:linear-gradient(90deg,#facc15,#f97316);color:black;padding:12px;border-radius:12px;margin:10px;font-weight:900>🏆 JACKPOT NOW • R5,000,000 • Next draw Tonight 21:00</div><div id='installBanner' class='install-banner'>📱 INSTALL APP - Tap Here! <button onclick='installApp()' class='btn btn-dark' style=width:auto;padding:5px 15px>INSTALL</button></div><div class=card><h2>LOGIN</h2><form method='post'><div style=text-align:left;font-size:12px;font-weight:700;margin-top:8px>Full Name / Username</div><input name='username' placeholder='Enter your full name' required><div style=text-align:left;font-size:12px;font-weight:700>Password</div><input name='password' type='password' placeholder='Enter your password' required><button class='btn btn-green' style=margin-top:12px>Login</button></form><button class='btn btn-blue' onclick="location.href='/register'">Register R100 FREE</button></div>"""
+    return STYLE+"""<div class=header><h1 style=color:#facc15>⭐ Mochaina Lotto 🇿🇦</h1></div><div style=background:linear-gradient(90deg,#facc15,#f97316);color:black;padding:12px;border-radius:12px;margin:10px;font-weight:900>🏆 JACKPOT NOW • R5,000,000 • Next draw Tonight 21:00</div><div class=card><h2>LOGIN</h2><form method='post'><div style=text-align:left;font-size:12px;font-weight:700;margin-top:8px>Full Name / Username</div><input name='username' placeholder='Enter your full name' required><div style=text-align:left;font-size:12px;font-weight:700>Password</div><input name='password' type='password' placeholder='Enter your password' required><button class='btn btn-green' style=margin-top:12px>Login</button></form><button class='btn btn-blue' onclick="location.href='/register'">Register R100 FREE</button></div>"""
 
 @app.route('/register', methods=['GET','POST'])
 def register():
@@ -168,16 +163,15 @@ def menu():
     except: pass
     user=User.query.get(session['uid'])
     if not user: session.clear(); return redirect('/login')
-    ts=get_next_draw_timestamp()
-    return STYLE+f"""<div class=header><h1>⭐ MOCHAINA STAR ⭐</h1><p>Welcome, {session['uname']}</p></div><div id='installBanner' class='install-banner'>📱 INSTALL APP - Tap Here! <button onclick='installApp()' class='btn btn-dark' style=width:auto;padding:5px 15px>INSTALL</button></div><div class=card><p style=margin:4px 0>💰 JACKPOT 💰</p><div class=jackpot>R{get_jackpot():,.2f}</div><p style=color:green;font-weight:900;margin:8px 0>Balance: R{user.balance:.2f}</p><div style=margin:8px 0><span style=color:#475569;font-size:12px;font-weight:800>NEXT DRAW: </span><span id='liveTimer' class='timer-box'>{next_draw_str()}</span></div><button class='btn btn-green' onclick="location.href='/play'">1. PLAY LOTTO</button><button class='btn btn-dark' onclick="location.href='/my_tickets'">2. MY TICKETS</button><button class='btn btn-blue' onclick="location.href='/load'">3. LOAD FUNDS</button><button class='btn btn-orange' onclick="location.href='/withdraw'">4. WITHDRAW</button><button class='btn btn-purple' onclick="location.href='/results'">5. RESULTS</button><button class='btn btn-red' onclick="location.href='/admin?key=mochaina123'">6. ADMIN</button><button class='btn' style=background:linear-gradient(90deg,#ef4444,#9333ea);color:white;padding:18px;margin-top:6px' onclick="location.href='/live'">7. 🔴 LIVE GAMES - COIN WHEEL SLOTS DICE</button><button class='btn' style=background:gray;color:white onclick="location.href='/logout'">LOGOUT</button></div>"""
+    return STYLE+f"""<div class=header><h1>⭐ MOCHAINA STAR ⭐</h1><p>Welcome, {session['uname']}</p></div><div class=card><p style=margin:4px 0>💰 JACKPOT 💰</p><div class=jackpot>R{get_jackpot():,.2f}</div><p style=color:green;font-weight:900;margin:8px 0>Balance: R{user.balance:.2f}</p><div style=margin:8px 0><span style=color:#475569;font-size:12px;font-weight:800>NEXT DRAW: </span><span class=timer-box>{next_draw_str()}</span></div><button class='btn btn-green' onclick="location.href='/play'">1. PLAY LOTTO</button><button class='btn btn-dark' onclick="location.href='/my_tickets'">2. MY TICKETS</button><button class='btn btn-blue' onclick="location.href='/load'">3. LOAD FUNDS</button><button class='btn btn-orange' onclick="location.href='/withdraw'">4. WITHDRAW</button><button class='btn btn-purple' onclick="location.href='/results'">5. RESULTS</button><button class='btn btn-red' onclick="location.href='/admin?key=mochaina123'">6. ADMIN</button><button class='btn' style=background:linear-gradient(90deg,#ef4444,#9333ea);color:white;padding:18px;margin-top:6px' onclick="location.href='/live'">7. 🔴 LIVE GAMES</button><button class='btn' style=background:gray;color:white onclick="location.href='/logout'">LOGOUT</button></div>"""
 
 @app.route('/live')
 def live_games():
     if 'uid' not in session: return redirect('/login')
     user=User.query.get(session['uid'])
-    return STYLE+f"""<div class=card><h2>🔴 LIVE GAMES</h2><p style=color:#16a34a;font-weight:900>Balance: R{user.balance:.2f}</p><div class='game-card' onclick="location.href='/wheel'" style=border-left:6px solid #9333ea><b>🎡 WHEEL - BET WHILE SPIN (FAST SLOWDOWN)</b></div><div class='game-card' onclick="location.href='/coin'"><b>🪙 COIN FLIP</b></div><div class='game-card' onclick="location.href='/slots'"><b>🎰 SLOTS</b></div><div class='game-card' onclick="location.href='/dice'"><b>🎲 DICE</b></div><button class='btn' style=background:#e2e8f0;color:#475569;margin-top:16px onclick="location.href='/menu'">BACK</button></div>"""
+    return STYLE+f"""<div class=card><h2>🔴 LIVE GAMES</h2><p style=color:#16a34a;font-weight:900>Balance: R{user.balance:.2f}</p><div class='game-card' style=border:2px solid gold;padding:12px;border-radius:12px;margin:8px 0;background:#fffbeb;cursor:pointer onclick="location.href='/wheel'"><b>🎡 WHEEL - FAST SPIN</b></div><div class='game-card' style=border:2px solid #ccc;padding:12px;border-radius:12px;margin:8px 0;cursor:pointer onclick="location.href='/coin'"><b>🪙 COIN FLIP</b></div><div class='game-card' style=border:2px solid #ccc;padding:12px;border-radius:12px;margin:8px 0;cursor:pointer onclick="location.href='/slots'"><b>🎰 SLOTS</b></div><div class='game-card' style=border:2px solid #ccc;padding:12px;border-radius:12px;margin:8px 0;cursor:pointer onclick="location.href='/dice'"><b>🎲 DICE</b></div><button class='btn' style=background:#e2e8f0;color:#475569;margin-top:16px onclick="location.href='/menu'">BACK</button></div>"""
 
-# ===== NEW WHEEL - FAST THEN SLOW BIT BY BIT =====
+# ===== WHEEL - FAST SPEEDING UP + SLOW DOWN BIT BY BIT + FULL STOP =====
 @app.route('/wheel')
 def wheel():
     if 'uid' not in session: return redirect('/login')
@@ -190,11 +184,6 @@ def wheel():
         x2=100+95*math.cos(a2); y2=100+95*math.sin(a2)
         svg+=f'<path d="M100,100 L{x1:.1f},{y1:.1f} A95,95 0 0,1 {x2:.1f},{y2:.1f} Z" fill="{cols[i]}" stroke="white" stroke-width="2.5"/>'
     return STYLE+f"""
-<style>
-@keyframes idleRoll {{ from{{transform:rotate(0deg)}} to{{transform:rotate(360deg)}} }}
-.wheel-idle {{ animation: idleRoll 10s linear infinite; }}
-.wheel-glow {{ box-shadow: 0 0 35px #facc1599; }}
-</style>
 <div class=card style=background:white;padding:14px>
 <h2 style=margin:4px 0 0 0;font-weight:900;font-size:20px>🎡 WHEEL - BET WHILE SPIN</h2>
 <div style=font-size:24px;margin:0 0 6px 0>⚡</div>
@@ -207,7 +196,7 @@ def wheel():
 <p id='bal' style=color:#16a34a;font-weight:900;margin:8px 0>Balance: R{user.balance:.2f}</p>
 <div style=position:relative;width:300px;height:300px;margin:12px auto>
 <div style=position:absolute;top:-8px;left:50%;transform:translateX(-50%);font-size:38px;z-index:20>👇</div>
-<div id='wheelWrap' class='wheel-idle wheel-glow' style='width:100%;height:100%;border-radius:50%;border:8px solid #facc15;background:white;overflow:hidden'><svg viewBox="0 0 200 200" style=width:100%;height:100%>{svg}<circle cx="100" cy="100" r="24" fill="#0f172a" stroke="white" stroke-width="3"/><circle cx="100" cy="100" r="12" fill="#facc15"/></svg></div>
+<div id='wheelWrap' style='width:100%;height:100%;border-radius:50%;border:8px solid #facc15;background:white;overflow:hidden;box-shadow:0 0 25px #facc1588;transform:rotate(0deg)'><svg viewBox="0 0 200 200" style=width:100%;height:100%>{svg}<circle cx="100" cy="100" r="24" fill="#0f172a" stroke="white" stroke-width="3"/><circle cx="100" cy="100" r="12" fill="#facc15"/></svg></div>
 </div>
 <div id='lastWin' style=font-weight:900;margin:8px 0>Last: -</div>
 <div id='myBetBox' style=background:#fef9c3;padding:8px;border-radius:10px;font-weight:800;margin:6px 0;font-size:13px>Next bet: -</div>
@@ -230,46 +219,41 @@ def wheel():
 <button class='btn' style=background:#e2e8f0;color:#475569;margin-top:8px onclick="location.href='/live'">BACK</button>
 <script>
 let sel=null, selMult=2, roundId=parseInt(document.getElementById('roundNum').innerText), timeLeft=11, spinning=false, cr=0;
-function setStake(v){{document.getElementById('stake').value=v; document.getElementById('stakeShow').innerText='Stake: R'+v; if(sel) enableBet();}}
-function pickColor(c,m,el){{sel=c; selMult=m; document.querySelectorAll('.color-btn').forEach(b=>b.classList.remove('selected')); el.classList.add('selected'); document.getElementById('stakeShow').innerText='Stake: R'+document.getElementById('stake').value+' on '+c+' x'+m; enableBet();}}
+function setStake(v){{document.getElementById('stake').value=v; if(sel) enableBet();}}
+function pickColor(c,m,el){{sel=c; selMult=m; document.querySelectorAll('.color-btn').forEach(b=>b.classList.remove('selected')); el.classList.add('selected'); enableBet();}}
 function enableBet(){{let b=document.getElementById('betBtn'); b.style.opacity='1'; b.style.pointerEvents='auto'; b.innerText=spinning?'BET R'+document.getElementById('stake').value+' ON '+sel+' FOR #'+(roundId+1)+' WHILE ROLLING!':'LOCK R'+document.getElementById('stake').value+' ON '+sel+' x'+selMult+' FOR #'+roundId;}}
-function placeBet(){{if(!sel)return; let s=document.getElementById('stake').value; fetch('/wheel_place_next?color='+sel+'&stake='+s+'&mult='+selMult).then(r=>r.json()).then(d=>{{if(d.error){{alert(d.error);return;}} document.getElementById('myBetBox').innerText='Locked #'+(spinning?roundId+1:roundId)+': R'+s+' on '+sel+' x'+selMult; document.getElementById('bal').innerText='Balance: R'+d.balance.toFixed(2);}});}}
+function placeBet(){{if(!sel)return; let s=document.getElementById('stake').value; fetch('/wheel_place_next?color='+sel+'&stake='+s+'&mult='+selMult).then(r=>r.json()).then(d=>{{if(d.error){{alert(d.error);return;}} document.getElementById('myBetBox').innerText='Locked #'+(spinning?roundId+1:roundId)+': R'+s+' on '+sel; document.getElementById('bal').innerText='Balance: R'+d.balance.toFixed(2);}});}}
 setInterval(function(){{
+  if(spinning) return;
   timeLeft--; if(timeLeft<0) timeLeft=0;
   document.getElementById('countdown').innerText=timeLeft;
   document.getElementById('left2').innerText=timeLeft;
-  if(!spinning && timeLeft<=0) doSpin();
+  if(timeLeft<=0) doSpin();
 }},1000);
 function doSpin(){{
   spinning=true;
   let wrap=document.getElementById('wheelWrap');
-  wrap.classList.remove('wheel-idle');
-  wrap.style.transition='none';
-  wrap.style.transform='rotate('+cr+'deg)';
-  document.getElementById('greenBox').innerHTML='⚡ ROLLING FAST... BET FOR NEXT #'+(roundId+1)+' NOW OPEN!';
+  document.getElementById('greenBox').innerHTML='⚡ VROOOOM! FAST SPIN — BET FOR NEXT #'+(roundId+1)+' OPEN!';
   fetch('/wheel_spin_next?round='+roundId).then(r=>r.json()).then(d=>{{
     let center=d.index*30+15;
     let target=(360-center+360)%360;
-    let totalSpin = 1440 + 720 + target;
-    let finalRot = cr + totalSpin;
-    let duration = 4500;
-    let startTime = null;
-    let startRot = cr;
+    let totalSpin = 3600 + target; // 10 FAST SPINS
+    let duration = 3000;
+    let startTime=null, startRot=cr;
     function easeOutCubic(t){{ return 1 - Math.pow(1 - t, 3); }}
     function animate(now){{
       if(!startTime) startTime=now;
-      let elapsed = now - startTime;
-      let progress = Math.min(elapsed / duration, 1);
-      let eased = easeOutCubic(progress);
-      let cur = startRot + totalSpin * eased;
-      wrap.style.transform = 'rotate('+cur+'deg)';
-      if(progress < 1){{
-        requestAnimationFrame(animate);
-      }} else {{
-        cr = finalRot % 360;
-        wrap.style.transition='none';
+      let p = Math.min((now-startTime)/duration, 1);
+      // speed up effect: first 20% boost 3x
+      let boosted = p < 0.2? p*3 : 0.6 + (p-0.2)*0.5;
+      if(boosted>1) boosted=1;
+      let e = easeOutCubic(boosted);
+      let cur = startRot + totalSpin * e;
+      wrap.style.transform='rotate('+cur+'deg)';
+      if(p < 1) requestAnimationFrame(animate);
+      else {{
+        cr = (startRot + totalSpin) % 360;
         wrap.style.transform='rotate('+cr+'deg)';
-        setTimeout(function(){{ wrap.classList.add('wheel-idle'); }},100);
         document.getElementById('lastWin').innerText='Last: '+d.landed;
         document.getElementById('winBox').innerText=d.win>0?'YOU WON R'+d.win+'! 🎉':'LOST — '+d.landed;
         document.getElementById('winBox').style.color=d.win>0?'#16a34a':'#ef4444';
@@ -316,52 +300,6 @@ def wheel_spin_next():
         user.balance+=win
         db.session.commit()
     return {"landed":landed,"index":idx,"win":win,"balance":round(user.balance,2)}
-
-@app.route('/slots')
-def slots():
-    if 'uid' not in session: return redirect('/login')
-    user=User.query.get(session['uid'])
-    return STYLE+f"""<div class=card><h2>🎰 SLOTS</h2><p>Balance: R{user.balance:.2f}</p><div style=background:#0f172a;padding:18px;border-radius:20px;display:flex;justify-content:center;gap:10px><div class='reel-box'><div id='r1' class='reel'>🍒</div></div><div class='reel-box'><div id='r2' class='reel'>🍋</div></div><div class='reel-box'><div id='r3' class='reel'>🔔</div></div></div><div id='slot_res' style=font-weight:900;margin:12px 0></div><button class='btn btn-blue' onclick="fetch('/slots_spin?stake=2').then(r=>r.json()).then(d=>{{document.getElementById('r1').innerText=d.reels[0];document.getElementById('r2').innerText=d.reels[1];document.getElementById('r3').innerText=d.reels[2];document.getElementById('slot_res').innerText=d.msg;location.reload()}})">SPIN R2</button><button class='btn' style=background:#e2e8f0 onclick="location.href='/live'">BACK</button></div>"""
-
-@app.route('/slots_spin')
-def slots_spin():
-    if 'uid' not in session: return redirect('/login')
-    user=User.query.get(session['uid'])
-    symbols=["🍒","🍋","🔔","7️⃣","⭐","💎"]; reels=[random.choice(symbols) for _ in range(3)]; win=0; msg=" ".join(reels)
-    if reels[0]==reels[1]==reels[2]: win=10; msg=f"JACKPOT {reels[0]} R{win}"; user.balance+=win
-    else: user.balance-=2
-    db.session.commit()
-    return {"reels":reels,"msg":msg,"win":win,"balance":round(user.balance,2)}
-
-@app.route('/coin')
-def coin_page():
-    if 'uid' not in session: return redirect('/login')
-    user=User.query.get(session['uid'])
-    return STYLE+f"<div class=card><h2>COIN</h2><p>Balance R{user.balance:.2f}</p><button class='btn btn-green' onclick=\"fetch('/coin_flip?choice=heads&stake=2').then(r=>r.json()).then(d=>{{alert(d.result+' win '+d.win);location.reload()}})\">HEADS</button><button class='btn btn-blue' onclick=\"fetch('/coin_flip?choice=tails&stake=2').then(r=>r.json()).then(d=>{{alert(d.result+' win '+d.win);location.reload()}})\">TAILS</button><button class='btn' onclick=\"location.href='/live'\">BACK</button></div>"
-
-@app.route('/coin_flip')
-def coin_flip():
-    if 'uid' not in session: return redirect('/login')
-    user=User.query.get(session['uid'])
-    choice=request.args.get('choice','heads'); result=random.choice(['heads','tails']); win=0
-    if result==choice: win=4; user.balance+=win-2
-    else: user.balance-=2
-    db.session.commit(); return {"result":result,"win":win}
-
-@app.route('/dice')
-def dice_page():
-    if 'uid' not in session: return redirect('/login')
-    user=User.query.get(session['uid'])
-    return STYLE+f"<div class=card><h2>DICE</h2><p>Balance R{user.balance:.2f}</p><button class='btn btn-green' onclick=\"fetch('/dice_roll?choice=low&stake=2').then(r=>r.json()).then(d=>{{alert(d.msg);location.reload()}})\">LOW</button><button class='btn btn-blue' onclick=\"fetch('/dice_roll?choice=high&stake=2').then(r=>r.json()).then(d=>{{alert(d.msg);location.reload()}})\">HIGH</button><button class='btn' onclick=\"location.href='/live'\">BACK</button></div>"
-
-@app.route('/dice_roll')
-def dice_roll():
-    if 'uid' not in session: return redirect('/login')
-    user=User.query.get(session['uid'])
-    rn=random.randint(0,100); win=0; msg=f"Roll {rn}"
-    if rn<50: user.balance+=2
-    else: user.balance-=2
-    db.session.commit(); return {"roll":rn,"msg":msg,"win":win,"d1":1,"d2":2}
 
 @app.route('/play')
 def play():
@@ -425,6 +363,47 @@ def results():
     draws=Draw.query.order_by(Draw.id.desc()).limit(10).all()
     html="".join([f"<div style=padding:6px;border-bottom:1px solid #eee>{d.date} - {d.numbers}+W{d.wing}</div>" for d in draws]) or "No results"
     return STYLE+f"<div class=card><h2>Results</h2><div>{html}</div><br><button onclick=\"location.href='/menu'\">Menu</button></div>"
+
+@app.route('/coin')
+def coin_page():
+    if 'uid' not in session: return redirect('/login')
+    user=User.query.get(session['uid'])
+    return STYLE+f"<div class=card><h2>COIN</h2><p>Balance R{user.balance:.2f}</p><button class='btn btn-green' onclick=\"fetch('/coin_flip?choice=heads').then(r=>r.json()).then(d=>{{alert(d.result+' win '+d.win);location.reload()}})\">HEADS</button><button class='btn btn-blue' onclick=\"fetch('/coin_flip?choice=tails').then(r=>r.json()).then(d=>{{alert(d.result+' win '+d.win);location.reload()}})\">TAILS</button><button class='btn' onclick=\"location.href='/live'\">BACK</button></div>"
+
+@app.route('/coin_flip')
+def coin_flip():
+    if 'uid' not in session: return redirect('/login')
+    user=User.query.get(session['uid'])
+    result=random.choice(['heads','tails']); win=0
+    if result=='heads': win=4; user.balance+=2
+    else: user.balance-=2
+    db.session.commit(); return {"result":result,"win":win}
+
+@app.route('/dice')
+def dice_page():
+    if 'uid' not in session: return redirect('/login')
+    user=User.query.get(session['uid'])
+    return STYLE+f"<div class=card><h2>DICE</h2><p>Balance R{user.balance:.2f}</p><button class='btn btn-green' onclick=\"fetch('/dice_roll?choice=low').then(r=>r.json()).then(d=>{{alert(d.msg);location.reload()}})\">LOW</button><button class='btn btn-blue' onclick=\"fetch('/dice_roll?choice=high').then(r=>r.json()).then(d=>{{alert(d.msg);location.reload()}})\">HIGH</button><button class='btn' onclick=\"location.href='/live'\">BACK</button></div>"
+
+@app.route('/dice_roll')
+def dice_roll():
+    if 'uid' not in session: return redirect('/login')
+    user=User.query.get(session['uid'])
+    rn=random.randint(0,100); user.balance+=2 if rn<50 else -2
+    db.session.commit(); return {"roll":rn,"msg":f"Roll {rn}","win":0,"d1":1,"d2":2}
+
+@app.route('/slots')
+def slots():
+    if 'uid' not in session: return redirect('/login')
+    user=User.query.get(session['uid'])
+    return STYLE+f"""<div class=card><h2>🎰 SLOTS</h2><p>Balance: R{user.balance:.2f}</p><button class='btn btn-blue' onclick="fetch('/slots_spin?stake=2').then(r=>r.json()).then(d=>{{alert(d.msg);location.reload()}})">SPIN R2</button><button class='btn' style=background:#e2e8f0 onclick="location.href='/live'">BACK</button></div>"""
+
+@app.route('/slots_spin')
+def slots_spin():
+    if 'uid' not in session: return redirect('/login')
+    user=User.query.get(session['uid'])
+    user.balance-=2; win=random.choice([0,0,0,10]); user.balance+=win; db.session.commit()
+    return {"reels":["🍒","🍒","🍒"],"msg":f"{'WIN R'+str(win) if win else 'LOSS'}","win":win,"balance":round(user.balance,2)}
 
 @app.route('/logout')
 def logout(): session.clear(); return redirect('/login')
