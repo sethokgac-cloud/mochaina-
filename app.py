@@ -52,20 +52,19 @@ def register():
 def menu():
     if 'uid' not in session: return redirect('/login')
     user=User.query.get(session['uid'])
-    return STYLE+f"""<div class=card><h2>⭐ MOCHAINA STAR ⭐</h2><p style=color:green;font-weight:900>Balance: R{user.balance:.2f}</p><button class='btn btn-gold' style=padding:18px onclick="location.href='/live'">🔴 LIVE GAMES - TEST WHEEL</button><button class='btn' style=background:gray;color:white onclick="location.href='/logout'">LOGOUT</button></div>"""
+    return STYLE+f"""<div class=card><h2>⭐ MOCHAINA STAR ⭐</h2><p style=color:green;font-weight:900>Balance: R{user.balance:.2f}</p><button class='btn btn-gold' style=padding:18px onclick="location.href='/live'">🔴 LIVE GAMES - SUPER FAST WHEEL</button><button class='btn' style=background:gray;color:white onclick="location.href='/logout'">LOGOUT</button></div>"""
 
 @app.route('/live')
 def live():
     if 'uid' not in session: return redirect('/login')
     user=User.query.get(session['uid'])
-    return STYLE+f"""<div class=card><h2>🔴 LIVE GAMES</h2><p>Balance: R{user.balance:.2f}</p><div style="border:3px solid #facc15;border-radius:16px;padding:16px;margin:12px 0;background:#fffbeb;cursor:pointer" onclick="location.href='/wheel'"><b>🎡 WHEEL - FAST SPIN TEST</b></div><button class='btn' style=background:#e2e8f0 onclick="location.href='/menu'">BACK</button></div>"""
+    return STYLE+f"""<div class=card><h2>🔴 LIVE GAMES</h2><p>Balance: R{user.balance:.2f}</p><div style="border:3px solid #facc15;border-radius:16px;padding:16px;margin:12px 0;background:#fffbeb;cursor:pointer" onclick="location.href='/wheel'"><b>🎡 WHEEL - SUPER FAST ⚡⚡</b></div><button class='btn' style=background:#e2e8f0 onclick="location.href='/menu'">BACK</button></div>"""
 
 @app.route('/wheel')
 def wheel():
     if 'uid' not in session: return redirect('/login')
     user=User.query.get(session['uid'])
     cols=["#dc2626","#facc15","#16a34a","#2563eb","#ea580c","#ec4899","#7c3aed","#06b6d4","#16a34a","#facc15","#dc2626","#06b6d4"]
-    labels=["RED","YEL","GREEN","BLUE","ORG","PINK","PURP","CYAN","GREEN","YEL","RED","CYAN"]
     svg=""
     for i in range(12):
         a1=math.radians(i*30-90); a2=math.radians((i+1)*30-90)
@@ -74,8 +73,8 @@ def wheel():
         svg+=f'<path d="M100,100 L{x1:.1f},{y1:.1f} A95,95 0 0,1 {x2:.1f},{y2:.1f} Z" fill="{cols[i]}" stroke="white" stroke-width="2.5"/>'
     return STYLE+f"""
 <div class=card>
-<h2 style=margin:0>🎡 WHEEL - FAST TEST</h2>
-<div style=background:#0f172a;color:#facc15;padding:10px;border-radius:12px;font-weight:900;margin:8px 0>⏳ SPIN IN: <span id='countdown'>10</span>s</div>
+<h2 style=margin:0>🎡 WHEEL - SUPER FAST ⚡</h2>
+<div style=background:#0f172a;color:#facc15;padding:10px;border-radius:12px;font-weight:900;margin:8px 0>⏳ SPIN IN: <span id='countdown'>8</span>s</div>
 <p style=color:#16a34a;font-weight:900 id='bal'>Balance: R{user.balance:.2f}</p>
 <div style=position:relative;width:300px;height:300px;margin:10px auto>
 <div style=position:absolute;top:-10px;left:50%;transform:translateX(-50%);font-size:36px;z-index:10>👇</div>
@@ -97,11 +96,11 @@ def wheel():
 <button class='btn btn-dark' onclick="setS(2)">R2</button><button class='btn btn-dark' onclick="setS(5)">R5</button><button class='btn btn-dark' onclick="setS(10)">R10</button><button class='btn btn-dark' onclick="setS(20)">R20</button></div>
 <input id='stake' type='hidden' value='5'><div id='stakeShow' style=font-size:12px;font-weight:800;margin:6px 0>Stake: R5</div>
 <button id='betBtn' class='btn btn-gold' style=opacity:0.5 onclick="placeBet()">PICK COLOR FIRST</button>
-<button class='btn btn-purple' style=margin-top:8px onclick="doSpin()">🔥 FORCE SPIN NOW</button>
+<button class='btn btn-purple' style=margin-top:8px onclick="doSpin()">🔥 FORCE SPIN NOW - TEST SPEED</button>
 <div id='winBox' style=font-weight:900;font-size:20px;min-height:28px;margin-top:8px></div>
 <button class='btn' style=background:#e2e8f0;margin-top:8px onclick="location.href='/live'">BACK</button>
 <script>
-var sel=null, mult=2, timeLeft=10, spinning=false, cr=0;
+var sel=null, mult=2, timeLeft=8, spinning=false, cr=0;
 function setS(v){{document.getElementById('stake').value=v; document.getElementById('stakeShow').innerText='Stake: R'+v+' on '+(sel||'-'); if(sel) enable();}}
 function pick(c,m,el){{sel=c; mult=m; document.querySelectorAll('.color-btn').forEach(b=>b.classList.remove('selected')); el.classList.add('selected'); enable();}}
 function enable(){{var b=document.getElementById('betBtn'); b.style.opacity='1'; b.innerText='LOCK R'+document.getElementById('stake').value+' ON '+sel+' x'+mult;}}
@@ -111,9 +110,9 @@ function doSpin(){{
 if(spinning)return; spinning=true;
 var wheel=document.getElementById('wheel');
 fetch('/wheel_spin').then(r=>r.json()).then(d=>{{
-var center=d.index*30+15; var target=(360-center+360)%360; var start=cr; var total=1800+target; var finalRot=start+total; var startTime=null; var duration=4000;
-function easeOut(t){{return 1-Math.pow(1-t,4);}}
-function animate(now){{if(!startTime)startTime=now;var p=Math.min((now-startTime)/duration,1);var cur=start+total*easeOut(p);wheel.style.transform='rotate('+cur+'deg)';if(p<1)requestAnimationFrame(animate);else{{cr=finalRot%360;wheel.style.transform='rotate('+cr+'deg)';document.getElementById('lastWin').innerText='Last: '+d.landed;document.getElementById('winBox').innerText=d.win>0?'WON R'+d.win+'!':'LOST - '+d.landed;document.getElementById('bal').innerText='Balance: R'+d.balance.toFixed(2);timeLeft=10;spinning=false;}}}}
+var center=d.index*30+15; var target=(360-center+360)%360; var start=cr; var total=2880+target; var finalRot=start+total; var startTime=null; var duration=2200;
+function easeOut(t){{return 1-Math.pow(1-t,3);}}
+function animate(now){{if(!startTime)startTime=now;var p=Math.min((now-startTime)/duration,1);var cur=start+total*easeOut(p);wheel.style.transform='rotate('+cur+'deg)';if(p<1)requestAnimationFrame(animate);else{{cr=finalRot%360;wheel.style.transform='rotate('+cr+'deg)';document.getElementById('lastWin').innerText='Last: '+d.landed;document.getElementById('winBox').innerText=d.win>0?'WON R'+d.win+'!':'LOST - '+d.landed;document.getElementById('bal').innerText='Balance: R'+d.balance.toFixed(2);timeLeft=8;spinning=false;}}}}
 requestAnimationFrame(animate);
 }});
 }}
